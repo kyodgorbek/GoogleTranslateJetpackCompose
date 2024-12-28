@@ -27,8 +27,9 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "API_KEY", "\"AIzaSyCQ7X7I9fDNd6NcWIrmSKRFadDQewMJfZ0\"")
+            buildConfigField("String", "API_KEY", "\"${System.getenv("API_KEY") ?: "default_api_key"}\"")
             buildConfigField("String", "TRANSLATION_API_ENDPOINT", "\"https://translation.googleapis.com/language/translate/v2\"")
+            buildConfigField("String", "BASE_URL", "\"https://translation.googleapis.com/\"")
             buildConfigField("String", "LANGUAGES_API_ENDPOINT", "\"https://translation.googleapis.com/language/translate/v2/languages\"")
         }
         release {
@@ -37,8 +38,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "API_KEY", "\"AIzaSyCQ7X7I9fDNd6NcWIrmSKRFadDQewMJfZ0\"")
+            buildConfigField("String", "API_KEY", "\"${System.getenv("API_KEY") ?: "default_api_key"}\"")
             buildConfigField("String", "TRANSLATION_API_ENDPOINT", "\"https://translation.googleapis.com/language/translate/v2\"")
+            buildConfigField("String", "BASE_URL", "\"https://translation.googleapis.com/\"")
             buildConfigField("String", "LANGUAGES_API_ENDPOINT", "\"https://translation.googleapis.com/language/translate/v2/languages\"")
         }
     }

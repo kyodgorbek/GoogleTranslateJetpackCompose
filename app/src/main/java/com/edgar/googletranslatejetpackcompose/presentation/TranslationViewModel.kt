@@ -1,46 +1,68 @@
 package com.edgar.googletranslatejetpackcompose.presentation
 
+import com.edgar.googletranslatejetpackcompose.data.remote.repository.TranslationRepository
+
+
 
 import androidx.lifecycle.ViewModel
-import com.edgar.googletranslatejetpackcompose.data.Language
-import com.edgar.googletranslatejetpackcompose.data.TranslateRequest
-import com.edgar.googletranslatejetpackcompose.data.repository.TranslationRepository
+import androidx.lifecycle.viewModelScope
+import com.edgar.googletranslatejetpackcompose.core.domain.util.Result
+import com.edgar.googletranslatejetpackcompose.data.remote.Language
+import com.edgar.googletranslatejetpackcompose.data.remote.TranslateRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 class TranslationViewModel(private val repository: TranslationRepository) : ViewModel() {
 
-    // StateFlow for managing source and target language
+    // Source language
     private val _sourceLanguage = MutableStateFlow(Language("en", "English"))
-    var sourceLanguage: StateFlow<Language> = _sourceLanguage
+    val sourceLanguage: StateFlow<Language> = _sourceLanguage
 
+    // Target language
     private val _targetLanguage = MutableStateFlow(Language("fr", "French"))
-    var targetLanguage: StateFlow<Language> = _targetLanguage
+    val targetLanguage: StateFlow<Language> = _targetLanguage
 
-    // StateFlow for the translation result
+    // Translated text result
     private val _translatedText = MutableStateFlow("")
-    var translatedText: StateFlow<String> = _translatedText
+    val translatedText: StateFlow<String> = _translatedText
 
-    // StateFlow for supported languages list
+    // List of supported languages
     private val _supportedLanguages = MutableStateFlow<List<Language>>(emptyList())
-    var supportedLanguages: StateFlow<List<Language>> = _supportedLanguages
+    val supportedLanguages: StateFlow<List<Language>> = _supportedLanguages
 
-    // Load supported languages
+    // Error message state
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
     init {
         loadSupportedLanguages()
     }
 
+    // Load supported languages
     private fun loadSupportedLanguages() {
         viewModelScope.launch {
-            try {
-                val languages = repository.getSupportedLanguages()
-                _supportedLanguages.value = languages
-            } catch (e: Exception) {
-                // Handle error fetching languages
+            when (val result = repository.getSupportedLanguages()) {
+                is Result.Success -> {
+                    // Set supported languages list when successful
+                    _supportedLanguages.value = result.data
+                }
+                is Result.Error -> {
+                    // Set error message on failure
+                    _error.value = "Failed to load languages: ${result.error.name}"
+                }
             }
         }
+    }
+
+    // Set source language
+    fun setSourceLanguage(language: Language) {
+        _sourceLanguage.value = language
+    }
+
+    // Set target language
+    fun setTargetLanguage(language: Language) {
+        _targetLanguage.value = language
     }
 
     // Swap source and target languages
@@ -50,19 +72,26 @@ class TranslationViewModel(private val repository: TranslationRepository) : View
         _targetLanguage.value = temp
     }
 
-    // Translate text using the current source and target language
+    // Translate the text
     fun translateText(text: String) {
+        // Create translate request
         val request = TranslateRequest(
             q = text,
             source = _sourceLanguage.value.code,
             target = _targetLanguage.value.code
         )
+
         viewModelScope.launch {
-            try {
-                val result = repository.translateText(request)
-                _translatedText.value = result
-            } catch (e: Exception) {
-                _translatedText.value = "Translation failed"
+            when (val result = repository.translateText(request)) {
+                is Result.Success -> {
+                    // Set translated text when successful
+                    _translatedText.value = result.data
+                }
+                is Result.Error -> {
+                    // Set error message when translation fails
+                    _translatedText.value = "Translation failed"
+                    _error.value = "Translation failed: ${result.error.name}"
+                }
             }
         }
     }
