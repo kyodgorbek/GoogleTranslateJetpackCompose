@@ -1,4 +1,3 @@
-
 package com.edgar.googletranslatejetpackcompose.data.remote
 
 import kotlinx.serialization.Serializable

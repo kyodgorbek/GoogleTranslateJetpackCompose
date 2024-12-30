@@ -21,8 +21,8 @@ fun TranslationApp(modifier: Modifier = Modifier) {
         }
         composable("select_source") {
             LanguageSelectionScreen(
-               isSource = true,
-               viewModel = viewModel,
+                isSource = true,
+                viewModel = viewModel,
                 onBack = { navController.popBackStack() }
             )
         }

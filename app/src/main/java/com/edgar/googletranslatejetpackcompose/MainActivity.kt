@@ -7,10 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.edgar.googletranslatejetpackcompose.presentation.TranslationApp
 import com.edgar.googletranslatejetpackcompose.ui.theme.GoogleTranslateJetpackComposeTheme
 
@@ -21,7 +18,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             GoogleTranslateJetpackComposeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                  TranslationApp(modifier = Modifier.padding(innerPadding))
+                    TranslationApp(modifier = Modifier.padding(innerPadding))
                 }
             }
         }

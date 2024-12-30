@@ -2,13 +2,13 @@ package com.edgar.googletranslatejetpackcompose.core.data.networking
 
 
 import com.edgar.googletranslatejetpackcompose.core.domain.util.NetworkError
+import com.edgar.googletranslatejetpackcompose.core.domain.util.Result
 import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
-import com.edgar.googletranslatejetpackcompose.core.domain.util.Result
 
 suspend inline fun <reified T> resposeToResult(response: HttpResponse)
-: Result<T, NetworkError> {
+        : Result<T, NetworkError> {
     return when (response.status.value) {
         in 200..299 -> {
             try {

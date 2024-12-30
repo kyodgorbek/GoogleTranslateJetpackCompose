@@ -21,8 +21,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.edgar.googletranslatejetpackcompose.data.remote.Language
+import com.edgar.googletranslatejetpackcompose.core.presentation.selection.getSupportedLanguages
+import com.edgar.googletranslatejetpackcompose.domain.Language
 import com.edgar.googletranslatejetpackcompose.presentation.TranslationViewModel
+
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,19 +34,12 @@ fun LanguageSelectionScreen(
     viewModel: TranslationViewModel,
     onBack: () -> Unit
 ) {
-    val supportedLanguages = listOf(
-        Language("en", "English"),
-        Language("es", "Spanish"),
-        Language("en", "English"),
-        Language("fr", "French"),
-        Language("de", "German"),
-        Language("it", "Italian"),
-                Language("ru", "Russian"),
-        Language("uz", "Uzbek")
-
-    )
-
-    val currentLanguage = if (isSource) viewModel.sourceLanguage.collectAsState().value else viewModel.targetLanguage.collectAsState().value
+    // Get the current language (source or target)
+    val currentLanguage = if (isSource) {
+        viewModel.sourceLanguage.collectAsState().value
+    } else {
+        viewModel.targetLanguage.collectAsState().value
+    }
 
     Scaffold(
         topBar = {
@@ -58,8 +53,12 @@ fun LanguageSelectionScreen(
             )
         }
     ) {
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            supportedLanguages.forEach { language ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            getSupportedLanguages().forEach { language ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -83,3 +82,5 @@ fun LanguageSelectionScreen(
         }
     }
 }
+
+

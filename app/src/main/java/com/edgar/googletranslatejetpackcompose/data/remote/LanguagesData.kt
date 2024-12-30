@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SupportedLanguagesResponse(
-    @SerialName("data")
-    val data: LanguagesData?
+data class LanguagesData(
+    @SerialName("languages")
+    val languageResponses: List<LanguageResponse>?
 )
