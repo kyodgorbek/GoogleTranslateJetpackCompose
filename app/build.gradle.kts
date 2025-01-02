@@ -9,13 +9,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-val localProperties = Properties()
-file("local.properties").takeIf { it.exists() }?.let {
-    localProperties.load(FileInputStream(it))
-    localProperties.forEach { (key, value) ->
-        project.extra[key.toString()] = value
-    }
-}
+
 
 android {
     namespace = "com.edgar.googletranslatejetpackcompose"
@@ -66,7 +60,7 @@ android {
                 "proguard-rules.pro"
             )
 
-            // Load API_KEY from local.properties
+
 
 
             buildConfigField("String", "API_KEY", "\"api_key\"")
@@ -100,7 +94,8 @@ android {
 
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES}"
+            excludes += "/META-INF/INDEX.LIST"
         }
     }
 }
@@ -121,11 +116,17 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.monitor)
+    implementation (libs.ktor.client.mock)
+    testImplementation (libs.ktor.client.mock)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation (libs.androidx.navigation.testing)
+    testImplementation (libs.androidx.navigation.testing)
+    testImplementation(libs.ktor.client.mock)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

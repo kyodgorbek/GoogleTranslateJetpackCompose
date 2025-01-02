@@ -45,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -55,43 +56,42 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TranslationScreen(navController: NavController, viewModel: TranslationViewModel) {
-    val sourceLanguage by viewModel.sourceLanguage.collectAsState()
-    val targetLanguage by viewModel.targetLanguage.collectAsState()
-    val translatedText by viewModel.translatedText.collectAsState()
-    val supportedLanguages by viewModel.supportedLanguages.collectAsState()
+    val sourceLanguage by viewModel.sourceLanguage.collectAsState() // Tag: Source language state
+    val targetLanguage by viewModel.targetLanguage.collectAsState() // Tag: Target language state
+    val translatedText by viewModel.translatedText.collectAsState() // Tag: Translated text state
+    val supportedLanguages by viewModel.supportedLanguages.collectAsState() // Tag: Supported languages list
 
-    var inputText by remember { mutableStateOf("") } // User input text
-    var showLanguageList by remember { mutableStateOf(false) } // Toggles language selection view
-    var isSourceLanguage by remember { mutableStateOf(true) } // Determines if source or target list
-    var searchQuery by remember { mutableStateOf("") } // Search query
-    var isSearchActive by remember { mutableStateOf(false) } // Toggles search query visibility
+    var inputText by remember { mutableStateOf("") } // Tag: Input text state
+    var showLanguageList by remember { mutableStateOf(false) } // Tag: Language list visibility state
+    var isSourceLanguage by remember { mutableStateOf(true) } // Tag: Source language selection state
+    var searchQuery by remember { mutableStateOf("") } // Tag: Search query for filtering languages
+    var isSearchActive by remember { mutableStateOf(false) } // Tag: Search active state
 
     // Filter the languages based on the search query
     val filteredLanguages = supportedLanguages.filter {
-        it.name.contains(searchQuery, ignoreCase = true)
+        it.name.contains(searchQuery, ignoreCase = true) // Tag: Filtered languages list
     }
 
     // Animate the width of the TextField when search is active
     val searchTextFieldWidth = animateDpAsState(
-        targetValue = if (isSearchActive) 320.dp else 0.dp, // Adjust the width based on the state
-        animationSpec = tween(durationMillis = 300) // Optional animation duration
+        targetValue = if (isSearchActive) 320.dp else 0.dp, // Tag: Animated TextField width
+        animationSpec = tween(durationMillis = 300) // Tag: Animation spec for width change
     )
 
     // Initialize Text-to-Speech
-    var tts: TextToSpeech? by remember { mutableStateOf(null) }
-    val context = LocalContext.current
+    var tts: TextToSpeech? by remember { mutableStateOf(null) } // Tag: TTS state
+    val context = LocalContext.current // Tag: Local context
 
     // Initialize the TTS object and set the language
     LaunchedEffect(Unit) {
         tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                val langResult =
-                    tts?.setLanguage(Locale(targetLanguage.code)) // Set language for TTS
+                val langResult = tts?.setLanguage(Locale(targetLanguage.code)) // Tag: Set language for TTS
                 if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.e("TTS", "Language not supported or missing data")
+                    Log.e("TTS", "Language not supported or missing data") // Tag: Error handling for TTS
                 }
             } else {
-                Log.e("TTS", "Initialization failed")
+                Log.e("TTS", "Initialization failed") // Tag: Error handling for TTS init failure
             }
         }
     }
@@ -99,15 +99,15 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
     // Function to convert text to speech
     fun speakText(text: String) {
         if (text.isNotBlank()) {
-            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null) // Tag: Convert text to speech
         }
     }
 
     // Handle resource cleanup for TTS
     DisposableEffect(LocalContext.current) {
         onDispose {
-            tts?.stop()
-            tts?.shutdown()
+            tts?.stop() // Tag: Stop TTS when disposed
+            tts?.shutdown() // Tag: Shutdown TTS when disposed
         }
     }
 
@@ -116,23 +116,19 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
         contract = ActivityResultContracts.StartActivityForResult(),
         onResult = { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                val speechResults =
-                    result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-                speechResults?.let { inputText = it.firstOrNull() ?: "" }
-                viewModel.translateText(inputText)
+                val speechResults = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                speechResults?.let { inputText = it.firstOrNull() ?: "" } // Tag: Handle speech recognition result
+                viewModel.translateText(inputText) // Tag: Trigger translation after speech input
             }
         }
     )
 
     fun startSpeechRecognition() {
         val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            )
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Say something")
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM) // Tag: Speech recognition intent setup
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Say something") // Tag: Speech prompt setup
         }
-        activityResultLauncher.launch(speechRecognizerIntent)
+        activityResultLauncher.launch(speechRecognizerIntent) // Tag: Launch speech recognition
     }
 
     Scaffold(
@@ -141,18 +137,16 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = if (isSourceLanguage) "Translate From" else "Translate To",
+                            text = if (isSourceLanguage) "Translate From" else "Translate To", // Tag: Title text for language selection
                             maxLines = 1,
-                            color = if (isSearchActive) MaterialTheme.colorScheme.onSurface.copy(
-                                alpha = 0.6f
-                            ) else MaterialTheme.colorScheme.onSurface
+                            color = if (isSearchActive) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = { showLanguageList = false }) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back"
+                                contentDescription = "Back" // Tag: Back navigation
                             )
                         }
                     },
@@ -160,7 +154,10 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                         IconButton(onClick = { isSearchActive = !isSearchActive }) {
                             Icon(
                                 imageVector = Icons.Default.Search,
-                                contentDescription = "Search Icon"
+                                contentDescription = "Search Icon",
+                                modifier = Modifier.testTag("SearchIcon") // Tag: Search icon visibility
+                                 // Tag: Search icon visibility
+                                    // Tag: Search icon toggle
                             )
                         }
 
@@ -174,11 +171,10 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(end = 16.dp)
-                                    .width(searchTextFieldWidth.value), // Use animated width
+                                    .width(searchTextFieldWidth.value)
+                                    .testTag("SearchTextField"), // Tag: Search TextField visibility and animation
                                 textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                    color = MaterialTheme.colorScheme.onSurface.copy(
-                                        alpha = 0.6f
-                                    )
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
                             )
                         }
@@ -202,10 +198,11 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
                             .padding(bottom = 16.dp)
+                            .testTag("SwapLanguagesButton") // Tag: Swap languages button
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.swap),
-                            contentDescription = "Swap Languages",
+                            contentDescription = "Swap Languages", // Tag: Swap languages icon
                             modifier = Modifier.size(32.dp)
                         )
                     }
@@ -220,8 +217,9 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(end = 8.dp)
+                                .testTag("SourceLanguageButton") // Tag: Source language button
                         ) {
-                            Text("Source: ${sourceLanguage.name}")
+                            Text("Source: ${sourceLanguage.name}") // Tag: Source language button
                         }
 
                         Button(
@@ -230,8 +228,9 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                                 showLanguageList = true
                             },
                             modifier = Modifier.weight(1f)
+                                .testTag("TargetLanguageButton") // Tag: Target language button
                         ) {
-                            Text("Target: ${targetLanguage.name}")
+                            Text("Target: ${targetLanguage.name}") // Tag: Target language button
                         }
                     }
 
@@ -243,13 +242,14 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                             value = inputText,
                             onValueChange = {
                                 inputText = it
-                                viewModel.translateText(it)
+                                viewModel.translateText(it) // Tag: Input text change triggers translation
                             },
                             label = { Text("Enter Text") },
                             placeholder = { Text("Type text to translate") },
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(end = 8.dp)
+                                .testTag("InputTextField") // Tag: Input TextField
                         )
 
                         TextField(
@@ -258,6 +258,7 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                             label = { Text("Translated Text") },
                             enabled = false,
                             modifier = Modifier.weight(1f)
+                                .testTag("TranslatedTextField") // Tag: Translated TextField
                         )
                     }
 
@@ -267,10 +268,11 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                     Button(
                         onClick = {
                             if (translatedText.isNotEmpty()) {
-                                speakText(translatedText) // Speak the translated text
+                                speakText(translatedText) // Tag: Speak translated text button
                             }
                         },
                         modifier = Modifier.align(Alignment.CenterHorizontally)
+                            .testTag("SpeakTranslationButton") // Tag: Speak translation button
                     ) {
                         Text("Speak Translation")
                     }
@@ -279,10 +281,11 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                     IconButton(
                         onClick = { startSpeechRecognition() },
                         modifier = Modifier.align(Alignment.CenterHorizontally)
+                            .testTag("TranslateButton") // Tag: Speech-to-text button
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.microphone), // Replace with your mic icon...
-                            contentDescription = "Start Speech Recognition"
+                            contentDescription = "Start Speech Recognition" // Tag: Speech recognition icon
                         )
                     }
                 }
@@ -297,9 +300,9 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                                 .padding(vertical = 8.dp)
                                 .clickable {
                                     if (isSourceLanguage) {
-                                        viewModel.setSourceLanguage(language)
+                                        viewModel.setSourceLanguage(language) // Tag: Set source language
                                     } else {
-                                        viewModel.setTargetLanguage(language)
+                                        viewModel.setTargetLanguage(language) // Tag: Set target language
                                     }
                                     showLanguageList = false
                                 }
@@ -307,6 +310,7 @@ fun TranslationScreen(navController: NavController, viewModel: TranslationViewMo
                             Text(
                                 text = language.name,
                                 modifier = Modifier.padding(start = 8.dp)
+                                .testTag("LanguageListItem") // Tag: Language list item
                             )
                         }
                     }

@@ -21,12 +21,12 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
 
-class TranslationRepository(
+open class TranslationRepository(
     private val client: HttpClient,
     private val languageMapper: LanguageMapper
 ) {
 
-    suspend fun getSupportedLanguages(): Result<List<Language>, NetworkError> {
+    open suspend fun getSupportedLanguages(): Result<List<Language>, NetworkError> {
         return safaCall<SupportedLanguagesResponse> {
             client.get(constructUrl(BuildConfig.LANGUAGES_API_ENDPOINT)) {
                 parameter("key", BuildConfig.API_KEY)
@@ -38,7 +38,7 @@ class TranslationRepository(
         }
     }
 
-    suspend fun translateText(request: TranslateRequest): Result<String, NetworkError> {
+    open suspend fun translateText(request: TranslateRequest): Result<String, NetworkError> {
         return safaCall<TranslateResponse> {
             client.post(constructUrl(BuildConfig.TRANSLATION_API_ENDPOINT)) {
                 parameter("key", BuildConfig.API_KEY)
